@@ -1,0 +1,6 @@
+dlib_front_and_rear_vehicles_v1/youtube_frames/
+dlib_front_and_rear_vehicles_v1/la_hill_st/
+dlib_front_and_rear_vehicles_v1/normal_rgb_images/
+dlib_front_and_rear_vehicles_v1/records/
+dlib_front_and_rear_vehicles_v1/experiments/
+*.pyc
