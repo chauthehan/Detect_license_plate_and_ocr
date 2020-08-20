@@ -54,6 +54,9 @@ def run_inference_for_single_image(model, image):
 def show_inference(model, image_path):
     image_np = np.array(Image.open(image_path))
     output_dict = run_inference_for_single_image(model, image_np)
+    
+    print(output_dict)   
+
 
     vis_util.visualize_boxes_and_labels_on_image_array(
         image_np,
@@ -74,15 +77,12 @@ def show_inference(model, image_path):
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 
-ap.add_argument("-l", "--labels", required=True,
-    help="labels file")
 ap.add_argument("-i", "--image", required=True,
     help="path to input image")
-ap.add_argument("-c", "--min-confidence", type=float, default=0.5,
-    help="minimum probability used to filter weak detections")
 args = vars(ap.parse_args())
 
-category_index = label_map_util.create_category_index_from_labelmap(args["labels"], use_display_name=True)
+labels = 'Tensorflow/models/research/object_detection/data/mscoco_label_map.pbtxt'
+category_index = label_map_util.create_category_index_from_labelmap(labels, use_display_name=True)
 
 model_name = 'ssd_mobilenet_v1_coco_2017_11_17'
 detection_model = load_model(model_name)
