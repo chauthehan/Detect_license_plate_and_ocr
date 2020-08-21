@@ -7,3 +7,4 @@ dlib_front_and_rear_vehicles_v1/experiments/
 *.ipynb
 *.zip
 plate/
+out/
