@@ -8,3 +8,12 @@ dlib_front_and_rear_vehicles_v1/experiments/
 *.zip
 plate/
 out/
+crnn/out/
+crnn/out_name/
+crnn/out_name_val/
+crnn/out_test/
+crnn/out_val/
+crnn/hdf5/
+crnn/test_out/
+crnn/test_out_name/
+

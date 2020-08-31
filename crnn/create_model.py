@@ -40,12 +40,19 @@ class CRNN:
 		model = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_normal')(model)
 		model = ELU()(model)
 		model = BatchNormalization(axis=chanDim)(model)
+
+		model = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_normal')(model)
+		model = ELU()(model)
+		model = BatchNormalization(axis=chanDim)(model)
 		model = MaxPooling2D(pool_size=(1, 2))(model)		
 
 		model = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_normal')(model)
 		model = ELU()(model)
 		model = BatchNormalization(axis=chanDim)(model)
 
+		model = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_normal')(model)
+		model = ELU()(model)
+		model = BatchNormalization(axis=chanDim)(model)
 
 		model = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_normal')(model)
 		model = ELU()(model)
@@ -56,6 +63,9 @@ class CRNN:
 		model = ELU()(model)
 		model = BatchNormalization(axis=chanDim)(model)
 
+		model = Conv2D(512, (3, 3), padding='same', kernel_initializer='he_normal')(model)
+		model = ELU()(model)
+		model = BatchNormalization(axis=chanDim)(model)
 		
 		model = Conv2D(512, (3, 3), padding='same', kernel_initializer='he_normal')(model)
 		model = ELU()(model)
@@ -64,10 +74,9 @@ class CRNN:
 
 		model = Conv2D(512, (2, 2), padding='same', kernel_initializer='he_normal')(model)
 		model = ELU()(model)
-		model = BatchNormalization(axis=chanDim)
-		
+
 		model = Reshape((64, 1280))(model)
-		model = Dense(64, activation='relu', kernel_initializer='he_normal',name='dense1')(model)
+		model = Dense(256, activation='relu', kernel_initializer='he_normal',name='dense1')(model)
 		
 		model = Bidirectional(LSTM(256, return_sequences=True, kernel_initializer='he_normal'))(model)
 		model = BatchNormalization(axis=chanDim)(model)
@@ -75,10 +84,10 @@ class CRNN:
 		model = Bidirectional(LSTM(256, return_sequences=True, kernel_initializer='he_normal'))(model)
 		model = BatchNormalization(axis=chanDim)(model)
 
-		model = Dense(216, kernel_initializer='he_normal')(model)
+		model = Dense(classes, kernel_initializer='he_normal')(model)
 		y_pred = Activation("softmax")(model)
 
-		labels = Input(name='label',shape=[20], dtype='float32') 
+		labels = Input(name='label',shape=[24], dtype='float32') 
 		input_length = Input(name='input_length',shape=[1], dtype='int64')     # (None, 1)
 		label_length = Input(name='label_length',shape=[1], dtype='int64') 
 
@@ -91,6 +100,6 @@ class CRNN:
 		else:
 			return Model(inputs=[inputs], outputs=[y_pred])
 
-model = CRNN.build(width=160, height=32, depth=1,classes=215)
+model = CRNN.build(width=160, height=32, depth=1,classes=40)
 model.summary()
 
