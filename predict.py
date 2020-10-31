@@ -1,17 +1,12 @@
-from object_detection.utils import label_map_util
-from object_detection.utils import ops as utils_ops
-from object_detection.utils import visualization_utils as vis_util
-from PIL import Image
-from IPython.display import display
-import tensorflow as tf
-import numpy as np
 import argparse
-import imutils
-import cv2
-import os
+from lib_detection import load_model, detect_lp, im2single
+from object_detection.utils import ops as utils_ops
 import pathlib
+import tensorflow as tf 
+import numpy as np 
+import cv2 
 
-def load_model(model_name):
+def load_model_ssd(model_name):
     base_url = 'http://download.tensorflow.org/models/object_detection/'
     model_file = model_name + '.tar.gz'
     #Download a file from URL if it not already in the cache
@@ -27,7 +22,6 @@ def load_model(model_name):
 
 def run_inference_for_single_image(model, image):
     image = np.asarray(image)
-    #the input needs to be a tensor, convert it using tf.convert_to_tensor'
     input_tensor = tf.convert_to_tensor(image)
     input_tensor = input_tensor[tf.newaxis,...]
 
@@ -51,49 +45,51 @@ def run_inference_for_single_image(model, image):
 
     return output_dict
 
-def show_inference(model, image_path):
-    image_np = np.array(Image.open(image_path))
-    output_dict = run_inference_for_single_image(model, image_np)
-    
-    print(output_dict)   
-
-
-    vis_util.visualize_boxes_and_labels_on_image_array(
-        image_np,
-        output_dict['detection_boxes'],
-        output_dict['detection_classes'],
-        output_dict['detection_scores'],
-        category_index,
-        instance_masks=output_dict.get('detection_masks_reframed', None),
-        use_normalized_coordinates=True,
-        line_thickness=3
-    )
-
-    #display(Image.fromarray(image_np))
-    im = Image.fromarray(image_np)
-    im.show()
-
-
-# construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-
-ap.add_argument("-i", "--image", required=True,
-    help="path to input image")
+ap.add_argument('-i', '--image', required=True,
+    help='Path to input image')
 args = vars(ap.parse_args())
 
-labels = 'Tensorflow/models/research/object_detection/data/mscoco_label_map.pbtxt'
-category_index = label_map_util.create_category_index_from_labelmap(labels, use_display_name=True)
 
 model_name = 'ssd_mobilenet_v1_coco_2017_11_17'
-detection_model = load_model(model_name)
+#load ssd_mobilenet modle
+detection_model = load_model_ssd(model_name)
 
-print(detection_model.signatures['serving_default'].inputs)
-print(detection_model.signatures['serving_default'].output_dtypes)
-print(detection_model.signatures['serving_default'].output_shapes)
+#load wpod model
+wpod_net_path = 'wpod-net_update1.json'
+wpod_net = load_model(wpod_net_path)
 
+#read the image and convert to pillow format to detect
+image_cv = cv2.imread(args['image'])
+pil_image = cv2.cvtColor(image_cv, cv2.COLOR_BGR2RGB)
 
-show_inference(detection_model, args["image"])
+output_dict = run_inference_for_single_image(detection_model, np.array(pil_image))
 
+Dmax = 608
+Dmin = 288
 
+score_thresh = 0.5
+for i in range(output_dict['detection_boxes'].shape[0]):
+    if output_dict['detection_classes'][i] in (3,4,6,8):
+        if output_dict['detection_scores'][i] > score_thresh:
+            ymin, xmin, ymax, xmax = output_dict['detection_boxes'][i]
 
+            im_height, im_width, _ = image_cv.shape
+            (tl_x, br_x, tl_y, br_y) = (int(xmin * im_width), int(xmax * im_width),
+                                            int(ymin * im_height), int(ymax * im_height))
+            single_vehicle = image_cv[tl_y:br_y, tl_x:br_x]
+            ratio = float(max(single_vehicle.shape[:2])) / min(single_vehicle.shape[:2])
+            side = int(ratio*Dmin)
+            bound_dim = min(side, Dmax)
+            
+            _, LpImg, lp_type = detect_lp(wpod_net, im2single(single_vehicle), bound_dim, lp_threshold=0.5)
+            
+            if LpImg is not None:      
 
+                cv2.imshow("Bien so", cv2.cvtColor(LpImg[0],cv2.COLOR_RGB2BGR ))
+                cv2.waitKey()
+            
+            image_cv = cv2.rectangle(image_cv, (tl_x, tl_y), (br_x, br_y), color=(0,255,0), thickness=2)
+
+cv2.imshow('', image_cv)
+cv2.waitKey(0)
