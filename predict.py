@@ -181,3 +181,8 @@ for i in range(output_dict['detection_boxes'].shape[0]):
                     gray_lp[:, 260:300] = cv2.blur(gray_lp[:, 260:300], (40, 40))
                 
                     predict_ocr(gray_lp)
+                image_cv = cv2.rectangle(image_cv, (tl_x, tl_y), (br_x, br_y), color=(0,255,0), thickness=2)
+
+
+cv2.imshow('', image_cv)
+cv2.waitKey(0)
