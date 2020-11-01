@@ -17,3 +17,4 @@ crnn/hdf5/
 crnn/test_out/
 crnn/test_out_name/
 Tensorflow/
+epoch_100.hdf5
