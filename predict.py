@@ -152,9 +152,10 @@ for i in range(output_dict['detection_boxes'].shape[0]):
             (tl_x, br_x, tl_y, br_y) = (int(xmin * im_width), int(xmax * im_width),
                                             int(ymin * im_height), int(ymax * im_height))
             single_vehicle = image_cv[tl_y:br_y, tl_x:br_x]
+            
             ratio = float(max(single_vehicle.shape[:2])) / min(single_vehicle.shape[:2])
             side = int(ratio*Dmin)
-            bound_dim = min(side, Dmax)
+            bound_dim = min(side + (side%(2**4)), Dmax)
             
             _, LpImg, lp_type = detect_lp(wpod_net, im2single(single_vehicle), bound_dim, lp_threshold=0.5)
             
